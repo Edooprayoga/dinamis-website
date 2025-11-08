@@ -111,6 +111,70 @@ app.get('/api/check-auth', (req, res) => {
   res.json({ authenticated: false });
 });
 
+app.get('/api/comments', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Anda harus login untuk melihat comment' });
+  }
+  
+  try {
+    const comments = db.listComments(50);
+    res.json({ success: true, comments });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal mengambil comment' });
+  }
+});
+
+app.post('/api/comments', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Anda harus login untuk membuat comment' });
+  }
+  
+  let { content } = req.body;
+  content = content?.trim();
+  
+  if (!content) {
+    return res.status(400).json({ error: 'Comment tidak boleh kosong' });
+  }
+  
+  if (content.length > 500) {
+    return res.status(400).json({ error: 'Comment maksimal 500 karakter' });
+  }
+  
+  try {
+    const user = db.getUserById(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User tidak ditemukan' });
+    }
+    
+    const comment = db.createComment(user.id, user.username, content);
+    res.json({ success: true, message: 'Comment berhasil dibuat', comment });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/comments/:id', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Anda harus login untuk menghapus comment' });
+  }
+  
+  const commentId = parseInt(req.params.id);
+  
+  if (isNaN(commentId)) {
+    return res.status(400).json({ error: 'ID comment tidak valid' });
+  }
+  
+  try {
+    db.deleteCommentByOwner(commentId, req.session.userId);
+    res.status(204).send();
+  } catch (error) {
+    if (error.message.includes('tidak memiliki izin')) {
+      return res.status(403).json({ error: error.message });
+    }
+    res.status(404).json({ error: error.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
