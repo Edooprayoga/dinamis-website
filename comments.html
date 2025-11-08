@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Komentar - Ahmad Edo Prayoga</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="auth-check.js"></script>
+</head>
+<body>
+  <header class="navbar">
+    <h1>Ahmad Edo Prayoga</h1>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="comments.html" class="active">Komentar</a>
+      <a href="contact.html">Contact</a>
+      <a href="#" onclick="logout(); return false;">Log out</a>
+    </nav>
+  </header>
+
+  <section class="comments-section">
+    <div class="comments-container">
+      <h2>💬 Komentar Dashboard</h2>
+      <p class="comment-subtitle">Bagikan pemikiran Anda dengan komunitas!</p>
+      
+      <div class="comment-form-wrapper">
+        <form id="commentForm">
+          <div class="user-info">
+            <span id="currentUsername">Loading...</span>
+          </div>
+          <textarea 
+            id="commentContent" 
+            placeholder="Tulis komentar Anda di sini... (maksimal 500 karakter)" 
+            maxlength="500"
+            required
+          ></textarea>
+          <div class="form-footer">
+            <span class="char-count"><span id="charCount">0</span>/500</span>
+            <button type="submit" class="btn-submit-comment">Kirim Komentar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="comments-list" id="commentsList">
+        <p class="loading">Memuat komentar...</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Ahmad Edo Prayoga | All Rights Reserved</p>
+  </footer>
+
+  <script>
+    let currentUser = null;
+
+    function updateUsername(username) {
+      currentUser = username;
+      const usernameEl = document.getElementById('currentUsername');
+      if (usernameEl) {
+        usernameEl.textContent = username;
+      }
+    }
+
+    async function loadComments() {
+      try {
+        const response = await fetch('/api/comments');
+        const data = await response.json();
+        
+        const commentsList = document.getElementById('commentsList');
+        
+        if (!response.ok) {
+          commentsList.innerHTML = '<p class="error">Gagal memuat komentar</p>';
+          return;
+        }
+        
+        if (data.comments.length === 0) {
+          commentsList.innerHTML = '<p class="no-comments">Belum ada komentar. Jadilah yang pertama berkomentar!</p>';
+          return;
+        }
+        
+        commentsList.innerHTML = data.comments.map(comment => {
+          const date = new Date(comment.created_at);
+          const formattedDate = date.toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          const isOwner = comment.username === currentUser;
+          
+          return `
+            <div class="comment-item" data-comment-id="${comment.id}">
+              <div class="comment-header">
+                <span class="comment-author">${escapeHtml(comment.username)}</span>
+                <span class="comment-date">${formattedDate}</span>
+              </div>
+              <div class="comment-content">${escapeHtml(comment.content)}</div>
+              ${isOwner ? `<button class="btn-delete-comment" onclick="deleteComment(${comment.id})">🗑️ Hapus</button>` : ''}
+            </div>
+          `;
+        }).join('');
+        
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        document.getElementById('commentsList').innerHTML = '<p class="error">Terjadi kesalahan saat memuat komentar</p>';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    document.getElementById('commentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const content = document.getElementById('commentContent').value.trim();
+      
+      if (!content) {
+        alert('Komentar tidak boleh kosong!');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          document.getElementById('commentContent').value = '';
+          document.getElementById('charCount').textContent = '0';
+          await loadComments();
+        } else {
+          alert(data.error || 'Gagal mengirim komentar');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+      }
+    });
+
+    async function deleteComment(commentId) {
+      if (!confirm('Yakin ingin menghapus komentar ini?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/comments/${commentId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok || response.status === 204) {
+          await loadComments();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Gagal menghapus komentar');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+      }
+    }
+
+    document.getElementById('commentContent').addEventListener('input', (e) => {
+      document.getElementById('charCount').textContent = e.target.value.length;
+    });
+
+    window.addEventListener('load', () => {
+      loadComments();
+    });
+  </script>
+</body>
+</html>
