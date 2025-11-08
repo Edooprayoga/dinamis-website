@@ -1,90 +1,76 @@
-# Website Portfolio Ahmad Edo Prayoga
+# Website Edo - Web Programming Project
 
 ## Overview
-Website portfolio dinamis dengan sistem authentication (login & register) untuk tugas pemrograman web. Dibangun menggunakan Node.js, Express, dan SQLite database.
+This is a full-stack web application built with Node.js and Express, featuring user authentication with login and registration functionality. The project was created by Ahmad Edo Prayoga as a web programming assignment.
 
-## Teknologi yang Digunakan
-- **Backend**: Node.js + Express
+## Project Architecture
+
+### Backend
+- **Framework**: Express.js
 - **Database**: SQLite (better-sqlite3)
-- **Authentication**: bcrypt + express-session
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
+  - `users.db`: Stores user accounts with username, password (hashed with bcrypt), email, and timestamps. Also contains comments table for storing user comments.
+  - `sessions.db`: Stores user session data
+- **Authentication**: Session-based authentication with express-session and bcrypt for password hashing
+- **Server**: Runs on port 5000, bound to 0.0.0.0
 
-## Fitur
-1. **Sistem Login & Register**
-   - Registrasi user baru dengan validasi
-   - Login dengan username & password
-   - Session management dengan SQLite store
-   - Password hashing menggunakan bcrypt
-   
-2. **Halaman Website**
-   - Login Page (index.html)
-   - Register Page (register.html)
-   - Home Page (home.html) - Protected
-   - About Page (about.html) - Protected
-   - Contact Page (contact.html) - Protected
+### Features
+- **User Authentication**: Secure login and registration with password hashing
+- **Comment System**: Users can post, view, and delete their own comments in a dedicated comments page
+- **Session Management**: Persistent user sessions with SQLite storage
+- **Protected Routes**: Authentication required for accessing dashboard pages
 
-3. **Keamanan**
-   - Password di-hash dengan bcrypt (10 salt rounds)
-   - Session-based authentication
-   - Protected routes - redirect ke login jika belum authenticated
-   - Input validation di frontend & backend
-   - Cookie security dengan httpOnly, sameSite, dan secure flags
+### Frontend
+- **Technology**: Vanilla HTML, CSS, JavaScript
+- **Pages**:
+  - `index.html`: Login page (main entry point)
+  - `register.html`: User registration page
+  - `home.html`: Home page (protected, requires authentication)
+  - `about.html`: About page
+  - `comments.html`: Comments page with community discussion feature (protected)
+  - `contact.html`: Contact page
+- **Authentication Check**: `auth-check.js` handles client-side authentication verification
 
-## Struktur File
-```
-├── server.js           # Main server & API endpoints
-├── database.js         # Database handler & operations
-├── auth-check.js       # Client-side authentication check
-├── index.html          # Login page
-├── register.html       # Registration page
-├── home.html           # Protected home page
-├── about.html          # Protected about page
-├── contact.html        # Protected contact page
-├── style.css           # Styling untuk semua halaman
-├── .env.example        # Template untuk environment variables
-└── users.db            # SQLite database (auto-generated)
-```
+### API Endpoints
+**Authentication:**
+- `POST /api/register`: Create new user account
+- `POST /api/login`: Authenticate user and create session
+- `POST /api/logout`: Destroy user session
+- `GET /api/check-auth`: Check if user is authenticated
 
-## API Endpoints
-- `POST /api/register` - Register user baru
-- `POST /api/login` - Login user
-- `POST /api/logout` - Logout user
-- `GET /api/check-auth` - Check authentication status
+**Comments:**
+- `GET /api/comments`: Retrieve all comments (requires authentication)
+- `POST /api/comments`: Create a new comment (requires authentication, max 500 characters)
+- `DELETE /api/comments/:id`: Delete a comment (requires authentication, only owner can delete)
 
-## Setup & Installation
-1. Dependencies sudah terinstall otomatis
-2. Database akan dibuat otomatis saat first run
-3. Server berjalan di port 5000
+## Dependencies
+- express: Web framework
+- express-session: Session management
+- connect-sqlite3: SQLite session store
+- better-sqlite3: SQLite database driver
+- bcrypt: Password hashing
 
-## Environment Variables
-Buat file `.env` untuk production:
-```
-SESSION_SECRET=your-random-secret-key-here
-NODE_ENV=production
-```
+## Development Setup
+- Server runs on: http://0.0.0.0:5000
+- Cache control headers are set to prevent caching issues
+- Session secret is auto-generated in development (set SESSION_SECRET env var for production)
 
-## Default Test Credentials
-Tidak ada user default - harus register terlebih dahulu melalui halaman register.
+## Recent Changes
+- 2025-11-08: Comment system feature added
+  - Created dedicated comments.html page with full comment functionality
+  - Added comments table to database with CRUD operations
+  - Implemented comment API endpoints (GET, POST, DELETE)
+  - Added "Komentar" menu to navbar in all protected pages
+  - Users can post comments (max 500 chars), view all comments, and delete their own
+  - Proper authentication and authorization checks in place
 
-## Catatan Keamanan
-- Session secret menggunakan environment variable
-- Cookie security sudah dikonfigurasi dengan sameSite:'lax' dan httpOnly
-- Database files (.db) tidak di-commit ke repository
-- Password tidak pernah disimpan dalam plain text
+- 2025-11-08: Initial import and setup in Replit environment
+  - Installed npm dependencies
+  - Created missing register.html page
+  - Verified server configuration and frontend display
+  - Configured workflow to run server on port 5000
 
-## Recent Changes (2025-11-08)
-- Implementasi sistem login & register dengan database
-- Menambahkan session management
-- Menambahkan proteksi halaman dengan auth-check
-- Security improvements (session secret, cookie flags, input validation)
-- Email validation untuk registrasi
-- Input trimming untuk username dan email
-
-## Cara Menggunakan
-1. Buka website
-2. Klik "Daftar di sini" untuk membuat akun baru
-3. Isi username (min 3 karakter), email (opsional), dan password (min 5 karakter)
-4. Setelah register berhasil, kembali ke halaman login
-5. Login dengan username dan password yang sudah dibuat
-6. Setelah login, bisa mengakses halaman Home, About, dan Contact
-7. Klik "Log out" untuk keluar
+## Notes
+- The application includes multimedia files (images, audio, video) for UI enhancement
+- Background music plays on login and registration pages
+- Uses Indonesian language for UI text
+- SQLite databases (*.db files) are gitignored for security
