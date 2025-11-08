@@ -7,6 +7,8 @@ const db = require('./database');
 const app = express();
 const PORT = 5000;
 
+app.set('trust proxy', 1);
+
 if (!process.env.SESSION_SECRET) {
   console.warn('WARNING: SESSION_SECRET is not set. Using a temporary secret for development.');
   console.warn('For production, please set SESSION_SECRET environment variable.');
