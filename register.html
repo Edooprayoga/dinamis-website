@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Ahmad Edo Prayoga</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-image"></div>
+  <div class="login-container">
+    <div class="login-box">
+      <h2>Daftar Akun Baru</h2>
+      <p>Buat akun untuk mengakses website</p>
+
+      <form id="registerForm">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Minimal 3 karakter" required>
+        </div>
+        <div class="input-group">
+          <label for="email">Email (Opsional)</label>
+          <input type="email" id="email" placeholder="email@example.com">
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Minimal 5 karakter" required>
+        </div>
+        <div class="input-group">
+          <label for="confirmPassword">Konfirmasi Password</label>
+          <input type="password" id="confirmPassword" placeholder="Ketik ulang password" required>
+        </div>
+        <button type="submit" class="btn-login">Daftar</button>
+        <p class="signup-text">Sudah punya akun? <a href="index.html">Login di sini</a></p>
+      </form>
+    </div>
+  </div>
+  
+  <audio id="bgMusic" autoplay loop>
+    <source src="Café Crème.mp3" type="audio/mpeg">
+    Browser kamu tidak mendukung pemutar audio.
+  </audio>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (password !== confirmPassword) {
+        alert('Password tidak cocok!');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(data.message + ' Silakan login dengan akun Anda.');
+          window.location.href = 'index.html';
+        } else {
+          alert(data.error || 'Registrasi gagal');
+        }
+      } catch (error) {
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
